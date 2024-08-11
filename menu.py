@@ -1,96 +1,178 @@
 import os
 import getpass
-os.system("tput setaf 6")
-print("\t\t\t\tWelcome to my project this is menu of linux")
-print("\t\t\t\t--------------------------------------------")
-passwd=getpass.getpass("Enter your Password : ")
-if passwd == "ayush":
-    user=input("Which user you want to go local/remote :")
-    if user == "local":   
-        print(""" 
-                Press 1: To create a file
-                Press 2: To Create a folder
-                Press 3: To show your date
-                Press 4: To show cal
-                Press 5: To install your software
-                Press 6: To exit
-                Press 7: To go Networking
-            """)
-        while True:
-            ch=input("Enter your choice: ")
-            if int(ch) == 1:
-                file_name=input("Enter your file name :")
-                os.system("touch {0}".format(file_name))
-            elif int(ch) == 2:
-                fold_name=input("Enter your folder name :")
-                os.system("mkdir {0}".format(fold_name))
-            elif int(ch) == 3:
-                os.system("date")
-            elif int(ch) == 4:
-                os.system("cal")
-            elif int(ch) == 5:
-                soft_name=input("Enter your software name: ")
-                os.system("yum install {0}".format(soft_name))
-            elif int(ch) == 6:
-                exit()
-            elif int(ch) == 7:
-                print("""
-                    Press 1: To show your IP 
-                    Press 2: To go to ssh
-                    Press 3: To go to scp
-                    Press 4: To go to NAS storage
-                    """)
-                networking=input("Choose your option: ")
-                if int(networking) == 1:
-                    os.system("ifconfig")
-                elif int(networking) == 2:
-                    print(""" 
-                    Press 1: To Send your cmd to remote system
-                    Press 2: To login your remote system 
-                    """)
-                    ssh_remote_system=input("Enter your choice :")
-                    if int(ssh_remote_system) == 1:
-                        ssh_remote_user=input("Enter your user name : ")
-                        ssh_remote_ip=input("Enter your IP : ")
-                        ssh_remote_cmd=input("Enter your CMD :")
-                        os.system("ssh {0}@{1} {2}".format(ssh_remote_user, ssh_remote_ip, ssh_remote_cmd))
-                    elif int(ssh_remote_system) == 2:
-                        ssh_remote_login_user=input("Enter your user name :")
-                        ssh_remote_login_IP=input("Enter your IP :")
-                        os.system("ssh -l {0} {1} ".format(ssh_remote_login_user, ssh_remote_login_IP))
-                        print("something")
-            else:
-                print("Option not support")
-    elif user == "remote":
-        ip=input("Enter your IP :")
+import subprocess
+
+def main_menu():
+    print("\n\t\t\t\tWelcome to my project, this is the menu of Linux")
+    print("\t\t\t\t--------------------------------------------")
+    passwd = getpass.getpass("Enter your Password: ")
+    if passwd == "ayush":
+        user = input("Which user you want to go local/remote: ").strip().lower()
+        if user == "local":
+            local_menu()
+        elif user == "remote":
+            remote_menu()
+        else:
+            print("Invalid option. Please choose 'local' or 'remote'.")
+    else:
+        print("Authentication failed.")
+        exit()
+
+def local_menu():
+    while True:
         print("""
-                Press 1: To create a file
-                Press 2: To Create a folder
-                Press 3: To show your date
-                Press 4: To show cal
-                Press 5: To install your software
-                Press 6: To exit
-                """)
-        ch=input("Enter your choice: ")
-        if int(ch) == 1:
-            file_name=input("Enter your file name :")
-            os.system("ssh {0} touch {1}".format(ip,file_name))
-        elif int(ch) == 2:
-            fold_name=input("Enter your folder name :")
-            os.system("ssh {0} mkdir {1}".format(ip,fold_name))
-        elif int(ch) == 3:
-            os.system("ssh {0} date".format(ip))
-        elif int(ch) == 4:
-            os.system("cal {0}".format(ip))
-        elif int(ch) == 5:
-            soft_name=input("Enter your software name: ")
-            os.system("ssh {0} yum install {1}".format(ip,soft_name))
-        elif int(ch) == 6:
+            Press 1: To create a file
+            Press 2: To create a folder
+            Press 3: To show the date
+            Press 4: To show the calendar
+            Press 5: To install software
+            Press 6: To exit
+            Press 7: To go to Networking
+        """)
+        choice = input("Enter your choice: ").strip()
+        if choice == '1':
+            create_file()
+        elif choice == '2':
+            create_folder()
+        elif choice == '3':
+            show_date()
+        elif choice == '4':
+            show_calendar()
+        elif choice == '5':
+            install_software()
+        elif choice == '6':
+            exit()
+        elif choice == '7':
+            networking_menu()
+        else:
+            print("Invalid choice. Please try again.")
+
+def create_file():
+    file_name = input("Enter your file name: ").strip()
+    if file_name:
+        subprocess.run(["touch", file_name])
+    else:
+        print("File name cannot be empty.")
+
+def create_folder():
+    folder_name = input("Enter your folder name: ").strip()
+    if folder_name:
+        subprocess.run(["mkdir", folder_name])
+    else:
+        print("Folder name cannot be empty.")
+
+def show_date():
+    subprocess.run(["date"])
+
+def show_calendar():
+    subprocess.run(["cal"])
+
+def install_software():
+    software_name = input("Enter your software name: ").strip()
+    if software_name:
+        subprocess.run(["yum", "install", software_name])
+    else:
+        print("Software name cannot be empty.")
+
+def networking_menu():
+    while True:
+        print("""
+            Press 1: To show your IP
+            Press 2: To go to SSH
+            Press 3: To go to SCP
+            Press 4: To go to NAS storage
+            Press 5: To go back to main menu
+        """)
+        choice = input("Choose your option: ").strip()
+        if choice == '1':
+            show_ip()
+        elif choice == '2':
+            ssh_menu()
+        elif choice == '3':
+            scp_menu()
+        elif choice == '4':
+            nas_menu()
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+def show_ip():
+    subprocess.run(["ifconfig"])
+
+def ssh_menu():
+    remote_ip = input("Enter the remote IP: ").strip()
+    remote_user = input("Enter the remote user: ").strip()
+    command = input("Enter the command to execute: ").strip()
+    if remote_ip and remote_user and command:
+        subprocess.run(["ssh", f"{remote_user}@{remote_ip}", command])
+    else:
+        print("IP, user, and command cannot be empty.")
+
+def scp_menu():
+    source = input("Enter the source file: ").strip()
+    destination = input("Enter the destination: ").strip()
+    if source and destination:
+        subprocess.run(["scp", source, destination])
+    else:
+        print("Source and destination cannot be empty.")
+
+def nas_menu():
+    print("NAS storage options are not implemented yet.")
+
+def remote_menu():
+    ip = input("Enter the remote IP: ").strip()
+    while True:
+        print("""
+            Press 1: To create a file
+            Press 2: To create a folder
+            Press 3: To show the date
+            Press 4: To show the calendar
+            Press 5: To install software
+            Press 6: To exit
+        """)
+        choice = input("Enter your choice: ").strip()
+        if choice == '1':
+            remote_create_file(ip)
+        elif choice == '2':
+            remote_create_folder(ip)
+        elif choice == '3':
+            remote_show_date(ip)
+        elif choice == '4':
+            remote_show_calendar(ip)
+        elif choice == '5':
+            remote_install_software(ip)
+        elif choice == '6':
             exit()
         else:
-            print("Option not support")
+            print("Invalid choice. Please try again.")
+
+def remote_create_file(ip):
+    file_name = input("Enter your file name: ").strip()
+    if file_name:
+        subprocess.run(["ssh", ip, "touch", file_name])
     else:
-            print("Option not support")
-else:
-    print("authentication failed")
-    exit()
+        print("File name cannot be empty.")
+
+def remote_create_folder(ip):
+    folder_name = input("Enter your folder name: ").strip()
+    if folder_name:
+        subprocess.run(["ssh", ip, "mkdir", folder_name])
+    else:
+        print("Folder name cannot be empty.")
+
+def remote_show_date(ip):
+    subprocess.run(["ssh", ip, "date"])
+
+def remote_show_calendar(ip):
+    subprocess.run(["ssh", ip, "cal"])
+
+def remote_install_software(ip):
+    software_name = input("Enter your software name: ").strip()
+    if software_name:
+        subprocess.run(["ssh", ip, "yum", "install", software_name])
+    else:
+        print("Software name cannot be empty.")
+
+if __name__ == "__main__":
+    main_menu()
