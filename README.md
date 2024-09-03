@@ -17,15 +17,18 @@ To run the Linux Menu application, you will need the following:
 
 ## Installation and Usage
 1. Clone the repository to your local machine:
-   ``` git clone https://github.com/ayushshakya84/TUI.git ```
-
-2. Navigate to the project directory:
-   ``` cd TUI ```
-
-3. Run the application:
-``` python3 menu.py ```
-
-4. Follow the on-screen instructions to navigate the menu and perform various actions.
+   ```bash
+   git clone https://github.com/ayushshakya84/TUI.git
+    ```
+3. Navigate to the project directory:
+   ```bash
+    cd TUI
+    ```
+5. Run the application:
+```bash
+python3 menu.py
+ ```
+7. Follow the on-screen instructions to navigate the menu and perform various actions.
 
 ## Contributing
 If you find any issues or have suggestions for improvements, feel free to contribute to the project. You can submit bug reports, feature requests, or even contribute code changes by creating a pull request.
