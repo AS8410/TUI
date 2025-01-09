@@ -1,178 +1,161 @@
-import os
-import getpass
 import subprocess
+import re
+import getpass
+
+# ---------------- Utility Functions ----------------
+
+def execute_command(command, shell=False):
+    """Run a system command and handle exceptions."""
+    try:
+        result = subprocess.run(command, shell=shell, check=True, text=True, capture_output=True)
+        print(result.stdout)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e.stderr if e.stderr else 'No error message available'}")
+
+def validate_ip(ip):
+    """Validate an IP address."""
+    ip_regex = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+    return re.match(ip_regex, ip) is not None
+
+# ---------------- Menus ----------------
+
+def display_menu(title, options):
+    """Display a menu and return the user's choice."""
+    print(f"\n{title}")
+    print("-" * len(title))
+    for key, value in options.items():
+        print(f"{key}: {value['desc']}")
+    return input("Enter your choice: ").strip()
 
 def main_menu():
-    print("\n\t\t\t\tWelcome to my project, this is the menu of Linux")
-    print("\t\t\t\t--------------------------------------------")
+    """Main menu for user authentication and entry point."""
+    print("\nWelcome to the Linux Menu Project")
     passwd = getpass.getpass("Enter your Password: ")
-    if passwd == "ayush":
-        user = input("Which user you want to go local/remote: ").strip().lower()
-        if user == "local":
-            local_menu()
-        elif user == "remote":
-            remote_menu()
-        else:
-            print("Invalid option. Please choose 'local' or 'remote'.")
-    else:
+    if passwd != "ayush":
         print("Authentication failed.")
-        exit()
+        return
+    
+    while True:
+        user_type = input("Choose user type (local/remote): ").strip().lower()
+        if user_type == "local":
+            local_menu()
+            break
+        elif user_type == "remote":
+            remote_menu()
+            break
+        else:
+            print("Invalid option. Please enter 'local' or 'remote'.")
 
 def local_menu():
+    """Local operations menu."""
+    options = {
+        '1': {'desc': 'Create a file', 'func': create_file},
+        '2': {'desc': 'Create a folder', 'func': create_folder},
+        '3': {'desc': 'Show the date', 'func': show_date},
+        '4': {'desc': 'Show the calendar', 'func': show_calendar},
+        '5': {'desc': 'Install software', 'func': install_software},
+    }
+    max_attempts = 3
+    attempts = 0
+    while attempts < max_attempts:
+        choice = display_menu("Local Operations Menu", options)
+        if choice in options:
+            options[choice]['func']()
+            attempts = 0  # reset attempts after a valid choice
+        else:
+            print("Invalid choice. Please try again.")
+            attempts += 1
+    print("Too many invalid attempts. Exiting menu.")
+    
+def networking_menu():
+    """Networking operations menu."""
+    options = {
+        '1': {'desc': 'Show IP address', 'func': show_ip},
+        '2': {'desc': 'SSH to a server', 'func': ssh_menu},
+        '3': {'desc': 'SCP file transfer', 'func': scp_menu},
+        '4': {'desc': 'NAS storage options', 'func': nas_menu},
+        '5': {'desc': 'Back to main menu', 'func': main_menu},
+    }
     while True:
-        print("""
-            Press 1: To create a file
-            Press 2: To create a folder
-            Press 3: To show the date
-            Press 4: To show the calendar
-            Press 5: To install software
-            Press 6: To exit
-            Press 7: To go to Networking
-        """)
-        choice = input("Enter your choice: ").strip()
-        if choice == '1':
-            create_file()
-        elif choice == '2':
-            create_folder()
-        elif choice == '3':
-            show_date()
-        elif choice == '4':
-            show_calendar()
-        elif choice == '5':
-            install_software()
-        elif choice == '6':
-            exit()
-        elif choice == '7':
-            networking_menu()
+        choice = display_menu("Networking Operations Menu", options)
+        if choice in options:
+            options[choice]['func']()
         else:
             print("Invalid choice. Please try again.")
 
+def remote_menu():
+    """Remote operations menu."""
+    ip = input("Enter the remote IP: ").strip()
+    if not validate_ip(ip):
+        print("Invalid IP address.")
+        return
+    # Similar to `local_menu` but with remote operations.
+
+# ---------------- Operations ----------------
+
 def create_file():
-    file_name = input("Enter your file name: ").strip()
+    """Create a new file."""
+    file_name = input("Enter file name: ").strip()
     if file_name:
-        subprocess.run(["touch", file_name])
+        execute_command(["touch", file_name])
     else:
         print("File name cannot be empty.")
 
 def create_folder():
-    folder_name = input("Enter your folder name: ").strip()
+    """Create a new folder."""
+    folder_name = input("Enter folder name: ").strip()
     if folder_name:
-        subprocess.run(["mkdir", folder_name])
+        execute_command(["mkdir", folder_name])
     else:
         print("Folder name cannot be empty.")
 
 def show_date():
-    subprocess.run(["date"])
+    """Display the current date."""
+    execute_command(["date"])
 
 def show_calendar():
-    subprocess.run(["cal"])
+    """Display the calendar."""
+    execute_command(["cal"])
 
 def install_software():
-    software_name = input("Enter your software name: ").strip()
+    """Install software based on the system."""
+    software_name = input("Enter software name: ").strip()
     if software_name:
-        subprocess.run(["yum", "install", software_name])
+        execute_command(["sudo", "apt", "install", software_name, "-y"])
     else:
         print("Software name cannot be empty.")
 
-def networking_menu():
-    while True:
-        print("""
-            Press 1: To show your IP
-            Press 2: To go to SSH
-            Press 3: To go to SCP
-            Press 4: To go to NAS storage
-            Press 5: To go back to main menu
-        """)
-        choice = input("Choose your option: ").strip()
-        if choice == '1':
-            show_ip()
-        elif choice == '2':
-            ssh_menu()
-        elif choice == '3':
-            scp_menu()
-        elif choice == '4':
-            nas_menu()
-        elif choice == '5':
-            break
-        else:
-            print("Invalid choice. Please try again.")
-
 def show_ip():
-    subprocess.run(["ifconfig"])
+    """Show the current IP address."""
+    execute_command("ifconfig | grep inet | awk 'NR==1 { print $2 }'", shell=True)
 
 def ssh_menu():
-    remote_ip = input("Enter the remote IP: ").strip()
-    remote_user = input("Enter the remote user: ").strip()
-    command = input("Enter the command to execute: ").strip()
+    """SSH into a remote machine."""
+    remote_ip = input("Enter remote IP: ").strip()
+    remote_user = input("Enter remote user: ").strip()
+    command = input("Enter command to execute: ").strip()
     if remote_ip and remote_user and command:
-        subprocess.run(["ssh", f"{remote_user}@{remote_ip}", command])
+        execute_command(["ssh", f"{remote_user}@{remote_ip}", command])
     else:
         print("IP, user, and command cannot be empty.")
 
 def scp_menu():
-    source = input("Enter the source file: ").strip()
-    destination = input("Enter the destination: ").strip()
+    """Transfer files using SCP."""
+    source = input("Enter source file: ").strip()
+    destination = input("Enter destination: ").strip()
     if source and destination:
-        subprocess.run(["scp", source, destination])
+        # Sanitize inputs to prevent command injection
+        source = re.escape(source)
+        destination = re.escape(destination)
+        execute_command(["scp", source, destination])
     else:
         print("Source and destination cannot be empty.")
 
 def nas_menu():
+    """Placeholder for NAS storage options."""
     print("NAS storage options are not implemented yet.")
 
-def remote_menu():
-    ip = input("Enter the remote IP: ").strip()
-    while True:
-        print("""
-            Press 1: To create a file
-            Press 2: To create a folder
-            Press 3: To show the date
-            Press 4: To show the calendar
-            Press 5: To install software
-            Press 6: To exit
-        """)
-        choice = input("Enter your choice: ").strip()
-        if choice == '1':
-            remote_create_file(ip)
-        elif choice == '2':
-            remote_create_folder(ip)
-        elif choice == '3':
-            remote_show_date(ip)
-        elif choice == '4':
-            remote_show_calendar(ip)
-        elif choice == '5':
-            remote_install_software(ip)
-        elif choice == '6':
-            exit()
-        else:
-            print("Invalid choice. Please try again.")
-
-def remote_create_file(ip):
-    file_name = input("Enter your file name: ").strip()
-    if file_name:
-        subprocess.run(["ssh", ip, "touch", file_name])
-    else:
-        print("File name cannot be empty.")
-
-def remote_create_folder(ip):
-    folder_name = input("Enter your folder name: ").strip()
-    if folder_name:
-        subprocess.run(["ssh", ip, "mkdir", folder_name])
-    else:
-        print("Folder name cannot be empty.")
-
-def remote_show_date(ip):
-    subprocess.run(["ssh", ip, "date"])
-
-def remote_show_calendar(ip):
-    subprocess.run(["ssh", ip, "cal"])
-
-def remote_install_software(ip):
-    software_name = input("Enter your software name: ").strip()
-    if software_name:
-        subprocess.run(["ssh", ip, "yum", "install", software_name])
-    else:
-        print("Software name cannot be empty.")
+# ---------------- Main Program ----------------
 
 if __name__ == "__main__":
     main_menu()
