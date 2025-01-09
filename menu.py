@@ -121,7 +121,7 @@ def install_software():
     """Install software based on the system."""
     software_name = input("Enter software name: ").strip()
     if software_name:
-        execute_command(["sudo", "apt", "install", software_name, "-y"])
+        execute_command(["sudo", "yum", "install", software_name, "-y"])
     else:
         print("Software name cannot be empty.")
 
